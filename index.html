@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Banglaphone</title>
+<style>
+:root{
+  --red:#D7263D; --gold:#C77700; --teal:#0B8A83; --plum:#6B3FB5; --green:#2E8B47; --orange:#D9501E; --blue:#2563C9; --pink:#B8307F;
+  --bg:#F3EEFF; --ink:#24143F; --card:#fff;
+  font-family:"Noto Sans Bengali","Noto Sans","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink)}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0)}
+header{background:linear-gradient(110deg,var(--red),#F08A00 70%,#F6C21B);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px}
+header svg{width:46px;height:46px;flex:none}
+header h1{margin:0;font-size:20px;line-height:1.1}
+header p{margin:2px 0 0;font-size:13px;opacity:.95}
+main{flex:1;overflow-y:auto;padding:14px 14px 90px}
+section{display:none}
+section.on{display:block}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:3px solid var(--plum);padding-bottom:env(safe-area-inset-bottom,0)}
+nav button{flex:1;border:0;background:none;padding:8px 0 6px;font:inherit;font-size:12px;color:#5b4b7a;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:24px}
+nav button.on{color:var(--plum);font-weight:700;background:#EEE6FF}
+.chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.chip{border:2px solid var(--plum);background:#fff;color:var(--plum);border-radius:99px;padding:6px 14px;font:inherit;font-size:14px;font-weight:600}
+.chip.on{background:var(--plum);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{border:2px solid var(--c);background:color-mix(in srgb,var(--c) 11%,#fff);border-radius:20px;padding:8px 4px 10px;font:inherit;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:0}
+.tile:active{transform:scale(.95)}
+.tile .bn{font-size:42px;line-height:1.25;color:var(--c);font-weight:700}
+.tile .ro{font-size:22px;font-weight:700}
+.hint{font-size:13px;color:#5b4b7a;margin:0 0 12px}
+.sheet-bg{position:fixed;inset:0;background:rgba(36,20,63,.55);display:none;align-items:flex-end;z-index:5}
+.sheet-bg.on{display:flex}
+.sheet{background:#fff;width:100%;border-radius:28px 28px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0));text-align:center;border-top:8px solid var(--c)}
+.sheet .big{font-size:96px;line-height:1.2;color:var(--c);font-weight:700}
+.sheet .rom{font-size:44px;font-weight:700}
+.sheet .emo{font-size:64px;margin-top:6px}
+.sheet .word{font-size:26px;margin-top:2px}
+.sheet .word b{color:var(--c)}
+.sheet .mean{color:#5b4b7a;font-size:15px}
+.btn{border:0;border-radius:16px;padding:12px 18px;font:inherit;font-size:16px;font-weight:700;color:#fff;background:var(--plum)}
+.btn.alt{background:var(--teal)} .btn.warn{background:var(--orange)} .btn.gold{background:var(--gold)}
+.row{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.stats{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:700}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{aspect-ratio:3/4;border:0;border-radius:18px;font:inherit;position:relative;perspective:600px;background:none;padding:0}
+.card .in{position:absolute;inset:0;transition:transform .35s;transform-style:preserve-3d}
+.card.up .in{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center}
+.card .b{background:repeating-conic-gradient(from 0deg,var(--plum) 0 15deg,#8a5fd6 15deg 30deg);font-size:34px;color:#fff;box-shadow:inset 0 0 0 4px #fff3}
+.card .f{transform:rotateY(180deg);background:#fff;border:3px solid var(--c);font-size:44px;font-weight:700;color:var(--c)}
+.card.ro .f{font-size:38px;color:var(--ink);background:color-mix(in srgb,var(--c) 14%,#fff)}
+.card.done .f{background:var(--c);color:#fff;border-color:var(--c)}
+.card.done .in{animation:pop .4s}
+@keyframes pop{50%{transform:rotateY(180deg) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.card .in{transition:none}.card.done .in{animation:none}}
+.win{text-align:center;padding:24px;background:#fff;border:3px dashed var(--gold);border-radius:24px;margin-top:14px;display:none}
+.win.on{display:block}
+.win .stars{font-size:46px}
+textarea,input.sp{width:100%;font:inherit;font-size:20px;border:3px solid var(--teal);border-radius:16px;padding:12px;color:var(--ink);background:#fff}
+textarea{min-height:110px;resize:vertical}
+textarea:focus,input.sp:focus{outline:3px solid #7fd6d0}
+.prev{background:#FFF3C9;border:3px solid var(--gold);border-radius:16px;padding:12px;font-size:26px;min-height:58px;margin:10px 0;word-break:break-word}
+.prev small{display:block;font-size:12px;color:#7a5200;margin-bottom:2px}
+.kb{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0}
+.kb button{border:0;border-radius:12px;padding:10px 0;font:inherit;font-size:22px;font-weight:700;color:#fff;background:var(--k)}
+.kb button.wide{grid-column:span 3;font-size:16px}
+.kb button:active{transform:scale(.93)}
+.quiz{background:#fff;border:3px solid var(--pink);border-radius:22px;padding:14px;text-align:center;margin-top:18px}
+.quiz h2{margin:0 0 4px;font-size:18px;color:var(--pink)}
+.quiz .emo{font-size:56px}
+.quiz .w{font-size:40px;font-weight:700;line-height:1.3}
+.msg{min-height:24px;font-weight:700;margin-top:8px}
+.msg.ok{color:var(--green)} .msg.no{color:var(--red)}
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="14" cy="14" r="9" fill="#F6A800"/><circle cx="50" cy="14" r="9" fill="#F6A800"/>
+    <circle cx="14" cy="14" r="4" fill="#fff"/><circle cx="50" cy="14" r="4" fill="#fff"/>
+    <circle cx="32" cy="35" r="26" fill="#FFB020"/>
+    <path d="M32 11v10M22 13l3 9M42 13l-3 9M7 34h9M48 34h9" stroke="#3a1c00" stroke-width="3.5" stroke-linecap="round"/>
+    <ellipse cx="32" cy="44" rx="13" ry="10" fill="#fff"/>
+    <circle cx="23" cy="31" r="4" fill="#24143F"/><circle cx="41" cy="31" r="4" fill="#24143F"/>
+    <circle cx="24.3" cy="29.8" r="1.3" fill="#fff"/><circle cx="42.3" cy="29.8" r="1.3" fill="#fff"/>
+    <path d="M27 39h10l-5 5z" fill="#D7263D"/>
+    <path d="M32 44v3M26 49q6 4 12 0" stroke="#24143F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div><h1>Banglaphone</h1><p>Bengali sounds, Roman diacritics</p></div>
+</header>
+
+<main>
+  <section id="learn" class="on">
+    <div class="chips" id="learnChips"></div>
+    <p class="hint">Tap a tile to see the letter, its sound and an example word.</p>
+    <div class="grid" id="learnGrid"></div>
+  </section>
+
+  <section id="match">
+    <div class="chips" id="matchChips"></div>
+    <div class="stats"><span>Moves: <span id="moves">0</span></span><span>Pairs: <span id="pairs">0</span>/6</span><button class="chip" id="again">New game</button></div>
+    <p class="hint">Flip two cards. Match each Bengali letter with its Roman form.</p>
+    <div class="mgrid" id="mgrid"></div>
+    <div class="win" id="win"><div class="stars" id="stars"></div><h2 style="margin:6px 0">All matched!</h2><p id="winTxt" style="margin:0 0 10px"></p><button class="btn" id="again2">Play again</button></div>
+  </section>
+
+  <section id="write">
+    <textarea id="pad" placeholder="Write Bengali in Roman: bāṁlā bhāṣā…" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+    <div class="prev"><small>Bengali preview</small><span id="bnOut"></span></div>
+    <div class="kb" id="kb"></div>
+    <div class="row" style="margin-top:0">
+      <button class="btn alt" id="copyRo">Copy Roman</button>
+      <button class="btn gold" id="copyBn">Copy Bengali</button>
+      <button class="btn warn" id="clearPad">Clear</button>
+    </div>
+    <div class="quiz">
+      <h2>Spell it with diacritics</h2>
+      <div class="emo" id="qEmo"></div>
+      <div class="w" id="qWord"></div>
+      <div class="mean" id="qMean" style="color:#5b4b7a"></div>
+      <input class="sp" id="spell" placeholder="Type the Roman spelling" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="msg" id="qMsg"></div>
+      <div class="row"><button class="btn" id="qCheck">Check</button><button class="btn alt" id="qShow">Show answer</button><button class="btn gold" id="qNext">Next word</button></div>
+      <p class="hint" style="margin:10px 0 0">Streak: <b id="streak">0</b></p>
+    </div>
+  </section>
+</main>
+
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+
+<nav>
+  <button class="on" data-t="learn"><span class="ic">📚</span>Learn</button>
+  <button data-t="match"><span class="ic">🎴</span>Match</button>
+  <button data-t="write"><span class="ic">✍️</span>Write</button>
+</nav>
+
+<script>
+const PAL=['#D7263D','#C77700','#0B8A83','#6B3FB5','#2E8B47','#D9501E','#2563C9','#B8307F'];
+// [bn, roman, type, example bn, example roman, emoji, meaning]
+const RAW=[
+['অ','a','v','অজগর','ajagara','🐍','python'],
+['আ','ā','v','আম','āma','🥭','mango'],
+['ই','i','v','ইলিশ','iliśa','🐟','hilsa fish'],
+['ঈ','ī','v','ঈগল','īgala','🦅','eagle'],
+['উ','u','v','উট','uṭa','🐪','camel'],
+['ঊ','ū','v','ঊষা','ūṣā','🌅','dawn'],
+['ঋ','r̥','v','ঋষি','r̥ṣi','🧘','sage'],
+['এ','e','v','একতারা','ekatārā','🪕','one-string lute'],
+['ঐ','ai','v','ঐরাবত','airābata','🐘','celestial elephant'],
+['ও','o','v','ওড়না','oṛanā','🧣','scarf'],
+['ঔ','au','v','ঔষধ','auṣadha','💊','medicine'],
+['ক','k','c','কলম','kalama','🖊️','pen'],
+['খ','kh','c','খাতা','khātā','📓','notebook'],
+['গ','g','c','গরু','garu','🐄','cow'],
+['ঘ','gh','c','ঘর','ghara','🏠','house'],
+['ঙ','ṅ','c','রঙ','raṅa','🎨','colour'],
+['চ','c','c','চশমা','caśamā','👓','spectacles'],
+['ছ','ch','c','ছাতা','chātā','☂️','umbrella'],
+['জ','j','c','জল','jala','💧','water'],
+['ঝ','jh','c','ঝড়','jhaṛa','🌪️','storm'],
+['ঞ','ñ','c','পাঞ্জাবি','pāñjābi','👘','kurta'],
+['ট','ṭ','c','টাকা','ṭākā','💰','money'],
+['ঠ','ṭh','c','ঠোঁট','ṭhom̐ṭa','👄','lips'],
+['ড','ḍ','c','ডিম','ḍima','🥚','egg'],
+['ঢ','ḍh','c','ঢাক','ḍhāka','🥁','drum'],
+['ণ','ṇ','c','ঘণ্টা','ghaṇṭā','🔔','bell'],
+['ত','t','c','তারা','tārā','⭐','star'],
+['থ','th','c','থালা','thālā','🍽️','plate'],
+['দ','d','c','দরজা','darajā','🚪','door'],
+['ধ','dh','c','ধান','dhāna','🌾','paddy'],
+['ন','n','c','নদী','nadī','🏞️','river'],
+['প','p','c','পাখি','pākhi','🐦','bird'],
+['ফ','ph','c','ফুল','phula','🌸','flower'],
+['ব','b','c','বই','bai','📖','book'],
+['ভ','bh','c','ভাত','bhāta','🍚','rice'],
+['ম','m','c','মাছ','mācha','🐠','fish'],
+['য','y','c','যন্ত্র','yantra','⚙️','machine'],
+['র','r','c','রাজা','rājā','👑','king'],
+['ল','l','c','লাল','lāla','🔴','red'],
+['শ','ś','c','শিশু','śiśu','👶','child'],
+['ষ','ṣ','c','ষাঁড়','ṣām̐ṛa','🐂','bull'],
+['স','s','c','সূর্য','sūrya','☀️','sun'],
+['হ','h','c','হরিণ','hariṇa','🦌','deer'],
+['ড়','ṛ','c','গাড়ি','gāṛi','🚗','car'],
+['ঢ়','ṛh','c','আষাঢ়','āṣāṛha','🌧️','monsoon month'],
+['য়','ẏ','c','ময়ূর','maẏūra','🦚','peacock'],
+['ং','ṁ','m','বাংলা','bāṁlā','🗣️','Bangla'],
+['ঃ','ḥ','m','দুঃখ','duḥkha','😢','sorrow'],
+['ঁ','m̐','m','চাঁদ','cām̐da','🌙','moon']
+];
+const DATA=RAW.map((r,i)=>({id:i,bn:r[0],ro:r[1],t:r[2],wb:r[3],wr:r[4],em:r[5],mn:r[6],c:PAL[i%PAL.length]}));
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.normalize('NFC').toLowerCase().trim();
+const showBn=d=>d.t==='m'?'ক'+d.bn:d.bn;   // dotted-circle-free: show mark on a base letter
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='bn-IN';speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- tabs ---------- */
+$$('nav button').forEach(b=>b.onclick=()=>{
+  $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));
+  $('main').scrollTop=0;
+});
+
+/* ---------- learn ---------- */
+const SETS=[['v','Vowels স্বর'],['c','Consonants ব্যঞ্জন'],['m','Marks চিহ্ন'],['x','All']];
+let lset='v';
+function chips(el,cur,on){el.innerHTML='';SETS.forEach(([k,l])=>{const b=document.createElement('button');b.className='chip'+(k===cur?' on':'');b.textContent=l;b.onclick=()=>on(k);el.appendChild(b)})}
+function renderLearn(){
+  chips($('#learnChips'),lset,k=>{lset=k;renderLearn()});
+  const g=$('#learnGrid');g.innerHTML='';
+  DATA.filter(d=>lset==='x'||d.t===lset).forEach(d=>{
+    const b=document.createElement('button');b.className='tile';b.style.setProperty('--c',d.c);
+    b.innerHTML=`<span class="bn">${showBn(d)}</span><span class="ro">${d.ro}</span>`;
+    b.onclick=()=>openSheet(d);g.appendChild(b);
+  });
+}
+function openSheet(d){
+  const s=$('#sheet');s.style.setProperty('--c',d.c);
+  const w=d.wb;
+  s.innerHTML=`<div class="big">${showBn(d)}</div><div class="rom">${d.ro}</div>
+  <div class="emo">${d.em}</div><div class="word">${w} = <b>${d.wr}</b></div><div class="mean">${d.mn}</div>
+  <div class="row"><button class="btn alt" id="sp">🔊 Listen</button><button class="btn" id="cl">Done</button></div>`;
+  $('#sheetBg').classList.add('on');
+  $('#sp').onclick=()=>speak(w);$('#cl').onclick=closeSheet;speak(w);
+}
+function closeSheet(){$('#sheetBg').classList.remove('on')}
+$('#sheetBg').onclick=e=>{if(e.target.id==='sheetBg')closeSheet()};
+
+/* ---------- match ---------- */
+let mset='v',open=[],moves=0,pairs=0,lock=false;
+function startMatch(){
+  chips($('#matchChips'),mset,k=>{mset=k;startMatch()});
+  open=[];moves=0;pairs=0;lock=false;$('#moves').textContent=0;$('#pairs').textContent=0;$('#win').classList.remove('on');
+  const pool=shuffle(DATA.filter(d=>mset==='x'||d.t===mset)).slice(0,6);
+  const cards=shuffle(pool.flatMap(d=>[{d,k:'bn'},{d,k:'ro'}]));
+  const g=$('#mgrid');g.innerHTML='';
+  cards.forEach(c=>{
+    const b=document.createElement('button');b.className='card '+c.k;b.style.setProperty('--c',c.d.c);
+    b.innerHTML=`<div class="in"><div class="b">✿</div><div class="f">${c.k==='bn'?showBn(c.d):c.d.ro}</div></div>`;
+    b.onclick=()=>flip(b,c);g.appendChild(b);
+  });
+}
+function flip(b,c){
+  if(lock||b.classList.contains('up'))return;
+  b.classList.add('up');open.push([b,c]);
+  if(open.length<2)return;
+  moves++;$('#moves').textContent=moves;
+  const [[b1,c1],[b2,c2]]=open;
+  if(c1.d.id===c2.d.id&&c1.k!==c2.k){
+    setTimeout(()=>{b1.classList.add('done');b2.classList.add('done')},300);
+    open=[];pairs++;$('#pairs').textContent=pairs;
+    if(pairs===6)setTimeout(finish,700);
+  }else{
+    lock=true;
+    setTimeout(()=>{b1.classList.remove('up');b2.classList.remove('up');open=[];lock=false},850);
+  }
+}
+function finish(){
+  const n=moves<=8?3:moves<=12?2:1;
+  $('#stars').textContent='⭐'.repeat(n)+'☆'.repeat(3-n);
+  $('#winTxt').textContent=`Finished in ${moves} moves.`;
+  $('#win').classList.add('on');$('#win').scrollIntoView({behavior:'smooth'});
+}
+$('#again').onclick=$('#again2').onclick=startMatch;
+
+/* ---------- Roman -> Bengali preview (ISO 15919 style) ---------- */
+const CONS=[['kh','খ'],['gh','ঘ'],['ch','ছ'],['jh','ঝ'],['ṭh','ঠ'],['ḍh','ঢ'],['th','থ'],['dh','ধ'],['ph','ফ'],['bh','ভ'],['ṛh','\u09DD'],
+['k','ক'],['g','গ'],['ṅ','ঙ'],['c','চ'],['j','জ'],['ñ','ঞ'],['ṭ','ট'],['ḍ','ড'],['ṇ','ণ'],['t','ত'],['d','দ'],['n','ন'],['p','প'],['b','ব'],['m','ম'],
+['y','য'],['r','র'],['l','ল'],['ś','শ'],['ṣ','ষ'],['s','স'],['h','হ'],['ṛ','\u09DC'],['ẏ','\u09DF']];
+const VOW=[['ai','ঐ','ৈ'],['au','ঔ','ৌ'],['ā','আ','া'],['ī','ঈ','ী'],['ū','ঊ','ূ'],['r\u0325','ঋ','ৃ'],['a','অ',''],['i','ই','ি'],['u','উ','ু'],['e','এ','ে'],['o','ও','ো']];
+const MARK=[['m\u0310','ঁ'],['ṁ','ং'],['ḥ','ঃ']];
+const TOK=[...CONS.map(x=>[x[0],x[1],'c']),...VOW.map(x=>[x[0],x[1],'v',x[2]]),...MARK.map(x=>[x[0],x[1],'k'])].sort((a,b)=>b[0].length-a[0].length);
+function toBn(src){
+  const s=src.normalize('NFC').toLowerCase();let out='',i=0,prev=false;
+  while(i<s.length){
+    const t=TOK.find(t=>s.startsWith(t[0],i));
+    if(!t){out+=s[i];i++;prev=false;continue}
+    if(t[2]==='c'){if(prev)out+='\u09CD';out+=t[1];prev=true}
+    else if(t[2]==='v'){out+=prev?t[3]:t[1];prev=false}
+    else{out+=t[1];prev=false}
+    i+=t[0].length;
+  }
+  return out;
+}
+
+/* ---------- write ---------- */
+const KEYS=['ā','ī','ū','r\u0325','ṅ','ñ','ṭ','ḍ','ṇ','ś','ṣ','ṁ','ḥ','m\u0310','ṛ','ẏ'];
+const pad=$('#pad'),spell=$('#spell');let active=pad;
+pad.onfocus=()=>active=pad;spell.onfocus=()=>active=spell;
+const kb=$('#kb');
+KEYS.forEach((k,i)=>{
+  const b=document.createElement('button');b.textContent=k==='r\u0325'?'r\u0325':k;b.style.setProperty('--k',PAL[i%PAL.length]);
+  b.onmousedown=e=>e.preventDefault();b.onclick=()=>ins(k);kb.appendChild(b);
+});
+[['␣ space',()=>ins(' ')],['⌫ delete',back]].forEach(([l,f],i)=>{
+  const b=document.createElement('button');b.textContent=l;b.className='wide';b.style.setProperty('--k',i?'#555':'#2563C9');
+  b.onmousedown=e=>e.preventDefault();b.onclick=f;kb.appendChild(b);
+});
+function ins(s){const el=active;const a=el.selectionStart??el.value.length,b=el.selectionEnd??a;el.setRangeText(s,a,b,'end');el.dispatchEvent(new Event('input'));el.focus()}
+function back(){
+  const el=active;let a=el.selectionStart,b=el.selectionEnd;
+  if(a===b){const m=el.value.slice(0,a).match(/[\s\S][\u0300-\u036f]*$/);if(!m)return;a-=m[0].length}
+  el.setRangeText('',a,b,'end');el.dispatchEvent(new Event('input'));el.focus();
+}
+function upd(){$('#bnOut').textContent=toBn(pad.value)||'…';try{localStorage.setItem('pad',pad.value)}catch(e){}}
+pad.oninput=upd;
+try{pad.value=localStorage.getItem('pad')||''}catch(e){}
+function copy(t){try{navigator.clipboard.writeText(t)}catch(e){const x=document.createElement('textarea');x.value=t;document.body.appendChild(x);x.select();document.execCommand('copy');x.remove()}}
+$('#copyRo').onclick=()=>copy(pad.value);
+$('#copyBn').onclick=()=>copy(toBn(pad.value));
+$('#clearPad').onclick=()=>{pad.value='';upd()};
+upd();
+
+/* ---------- spell challenge ---------- */
+let cur=null,streak=0;
+function nextWord(){
+  let n;do{n=DATA[Math.random()*DATA.length|0]}while(cur&&n.id===cur.id);cur=n;
+  $('#qEmo').textContent=n.em;$('#qWord').textContent=n.wb;$('#qMean').textContent=n.mn;
+  spell.value='';setMsg('');
+}
+function setMsg(t,c){const m=$('#qMsg');m.textContent=t;m.className='msg '+(c||'')}
+$('#qCheck').onclick=()=>{
+  if(norm(spell.value)===norm(cur.wr)){streak++;$('#streak').textContent=streak;setMsg('Correct! '+cur.wr,'ok')}
+  else{streak=0;$('#streak').textContent=0;setMsg('Not yet. Check each diacritic.','no')}
+};
+$('#qShow').onclick=()=>{streak=0;$('#streak').textContent=0;setMsg(cur.wr,'no')};
+$('#qNext').onclick=nextWord;
+spell.addEventListener('keydown',e=>{if(e.key==='Enter')$('#qCheck').click()});
+
+renderLearn();startMatch();nextWord();
+</script>
+</body>
+</html>

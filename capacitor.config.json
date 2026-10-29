@@ -1,0 +1,6 @@
+{
+  "appId": "com.banglaphone.app",
+  "appName": "Banglaphone",
+  "webDir": "www",
+  "android": { "backgroundColor": "#F3EEFF" }
+}
