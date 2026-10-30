@@ -31,6 +31,13 @@ jobs:
         run: |
           if [ ! -d android ]; then npx cap add android; fi
 
+      - name: Allow text-to-speech on Android 11+
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          if ! grep -q TTS_SERVICE "$MANIFEST"; then
+            sed -i 's#</manifest>#    <queries>\n        <intent>\n            <action android:name="android.intent.action.TTS_SERVICE" />\n        </intent>\n    </queries>\n</manifest>#' "$MANIFEST"
+          fi
+
       - name: Sync web assets
         run: npx cap sync android
 
