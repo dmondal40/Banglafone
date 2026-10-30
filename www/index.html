@@ -198,8 +198,18 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const norm=s=>s.normalize('NFC').toLowerCase().trim();
 const showBn=d=>d.t==='m'?'ক'+d.bn:d.bn;   // dotted-circle-free: show mark on a base letter
-function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='bn-IN';speechSynthesis.speak(u)}catch(e){}}
-
+async function speak(t){
+  const T=(window.Capacitor&&Capacitor.registerPlugin)?Capacitor.registerPlugin('TextToSpeech'):null;
+  let err='';
+  if(T){
+    try{await T.stop()}catch(e){}
+    for(const lang of ['bn-IN','bn-BD']){
+      try{await T.speak({text:t,lang:lang,rate:0.9,pitch:1,volume:1});return}catch(e){err+=lang+': '+(e.message||e)+' | '}
+    }
+  }else{err='plugin not found'}
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='bn-IN';speechSynthesis.speak(u)}catch(e){}
+  alert('Sound problem: '+err);
+}
 /* ---------- tabs ---------- */
 $$('nav button').forEach(b=>b.onclick=()=>{
   $$('nav button').forEach(x=>x.classList.toggle('on',x===b));
